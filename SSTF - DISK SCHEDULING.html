@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SSTF - DISK SCHEDULING</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .form-container {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      input[type="text"] {
+        padding: 5px;
+        width: 300px;
+      }
+
+      button {
+        padding: 5px 10px;
+        background-color: #a8c26b;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #a8c26b;
+      }
+
+      .chart-container {
+        width: 600px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SSTF - DISK SCHEDULING</h1>
+    <div class="form-container">
+      <label for="requests">Input Value:</label>
+      <br />
+      <input type="text" id="requests" />
+      <br />
+      <button onclick="visualize()">Evaluate</button>
+    </div>
+    <div class="chart-container">
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+      // Javascript Program for implementation of
+// SSTF disk scheduling
+function calculatedifference(request, head, diff, n) {
+    for (let i = 0; i < n; i++) {
+        diff[i][0] = Math.abs(head - request[i]);
+    }
+}
+ 
+// Find unaccessed track which is
+// at minimum distance from head
+function findMIN(diff, n) {
+    let index = -1;
+    let minimum = 1e9;
+ 
+    for (let i = 0; i < n; i++) {
+        if (!diff[i][1] && minimum > diff[i][0]) {
+            minimum = diff[i][0];
+            index = i;
+        }
+    }
+    return index;
+}
+ 
+function shortestSeekTimeFirst(request, head, n) {
+    if (n == 0) {
+        return;
+    }
+ 
+    // Create array of objects of class node   
+    let diff = new Array(n);
+    for (let i = 0; i < n; i++) {
+        diff[i] = new Array(2);
+    }
+ 
+    // Count total number of seek operation  
+    let seekcount = 0;
+ 
+    // Stores sequence in which disk access is done
+    let seeksequence = new Array(n + 1);
+    seeksequence[0] = head;
+ 
+    for (let i = 0; i < n; i++) {
+        calculatedifference(request, head, diff, n);
+        let index = findMIN(diff, n);
+        diff[index][1] = 1;
+ 
+        // Increase the total count
+        seekcount += diff[index][0];
+ 
+        // Accessed track is now new head
+        head = request[index];
+        seeksequence[i + 1] = head;
+    }
+ 
+    return seeksequence;
+}
+
+      function visualize() {
+        var input = document.getElementById("requests").value;
+        var requests = input.split(" ").map(Number);
+
+        const data = shortestSeekTimeFirst(requests, 100, requests.length);
+        const labels = Array.from({ length: data.length }, (_, i) =>
+          i.toString()
+        );
+
+        const ctx = document.getElementById("myChart").getContext("2d");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "",
+                data: data,
+                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "",
+                },
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Time",
+                },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
